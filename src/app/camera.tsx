@@ -14,6 +14,7 @@ const CameraScreen = () => {
 
   const camera = useRef<Camera>(null);
 
+  // Activate camera when screen is focused
   useFocusEffect(
     useCallback(() => {
       setIsActive(true);
@@ -25,18 +26,21 @@ const CameraScreen = () => {
 
   const device = useCameraDevice('back', { physicalDevices: ['ultra-wide-angle-camera'] });
 
+  // Request permissions for camera and (later microphone also)
   useEffect(() => {
     if (!hasPermission) {
       requestPermission();
     }
   }, [hasPermission]);
 
+  // Capture a photo
   const onTakePicture = async () => {
     const photo = await camera.current?.takePhoto({ flash });
     setPhoto(photo);
     setShowUpload(false); // Reset the upload state when a new photo is taken
   };
 
+  // Upload function for photo or video
   const uploadPhoto = async () => {
     if (!photo) return;
     const result = await fetch(`file://${photo.path}`);
@@ -44,6 +48,7 @@ const CameraScreen = () => {
     console.log(data); // Display the photo blob in the console
   };
 
+  // Scale animation for capture button press
   const scaleValue = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -60,9 +65,10 @@ const CameraScreen = () => {
       tension: 40,
       useNativeDriver: true,
     }).start();
-    onTakePicture();
+    onTakePicture(); // Capture photo on release
   };
 
+  // Show loading spinner if permissions are not granted
   if (!hasPermission) return <ActivityIndicator />;
   if (!device) return <Text>Camera device not found</Text>;
 
